@@ -3,7 +3,9 @@ package EtherHack.Ether;
 import EtherHack.utils.Logger;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import se.krka.kahlua.vm.KahluaTable;
@@ -34,7 +36,7 @@ public class EtherTranslator {
             HashMap var8 = new HashMap();
 
             try {
-               BufferedReader var9 = new BufferedReader(new FileReader(var6));
+               BufferedReader var9 = new BufferedReader(new InputStreamReader(new FileInputStream(var6), StandardCharsets.UTF_8));
 
                String var10;
                try {
@@ -95,21 +97,33 @@ public class EtherTranslator {
 
          String var5 = (String)var4.get(var1);
          if (var5 == null) {
-            Logger.printLog("No translation for key: " + var1 + " for language: " + var3);
-            return var1;
-         } else {
-            String var6;
-            String var7;
-            if (var2 != null && !var2.isEmpty()) {
-               for(KahluaTableIterator var8 = var2.iterator(); var8.advance(); var5 = var5.replace("{" + var6 + "}", var7)) {
-                  var6 = var8.getKey().toString();
-                  var7 = var8.getValue().toString();
+            Map var8 = (Map)this.translations.get("EN");
+            if (var8 != null) {
+               String var9 = (String)var8.get(var1);
+               if (var9 != null) {
+                  Logger.printLog("No translation for key: " + var1 + " for language: " + var3 + "; using English fallback");
+                  var5 = var9;
+               } else {
+                  Logger.printLog("No translation for key: " + var1 + " for language: " + var3);
+                  return var1;
                }
+            } else {
+               Logger.printLog("No translation for key: " + var1 + " for language: " + var3);
+               return var1;
             }
-
-            var5 = var5.replace("<br>", "\n");
-            return var5;
          }
+
+         String var6;
+         String var7;
+         if (var2 != null && !var2.isEmpty()) {
+            for(KahluaTableIterator var10 = var2.iterator(); var10.advance(); var5 = var5.replace("{" + var6 + "}", var7)) {
+               var6 = var10.getKey().toString();
+               var7 = var10.getValue().toString();
+            }
+         }
+
+         var5 = var5.replace("<br>", "\n");
+         return var5;
       }
    }
 
